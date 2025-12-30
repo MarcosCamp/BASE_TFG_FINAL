@@ -10,15 +10,16 @@ class Event extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',          // Cambiado
-        'description',
-        'event_date',    // Cambiado
-        'location',
-        'price',
-        'capacity',
-        'image',
-        'user_id',
-    ];
+    'name',
+    'category', // <--- AÑADE ESTO
+    'description',
+    'event_date',
+    'location',
+    'price',
+    'capacity',
+    'image',
+    'user_id',
+];
 
     // IMPORTANTE: Tu vista llama a $event->event_date->format(), 
     // así que debemos decirle a Laravel que esto es una fecha.
