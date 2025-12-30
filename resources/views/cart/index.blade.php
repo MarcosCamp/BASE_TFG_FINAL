@@ -33,21 +33,51 @@
                                         </div>
 
                                         <div class="mt-4 sm:mt-0 flex items-center gap-6">
-                                            <div class="text-center">
-                                                <span class="block text-xs text-gray-500">Cantidad</span>
-                                                <span class="font-semibold text-gray-900">{{ $details['quantity'] }}</span>
+                                            
+                                            {{-- SECCIÓN MODIFICADA: CONTROLES DE CANTIDAD --}}
+                                            <div class="flex flex-col items-center">
+                                                <span class="text-xs text-gray-500 mb-1">Cantidad</span>
+                                                
+                                                <div class="flex items-center border border-gray-300 rounded-md shadow-sm">
+                                                    {{-- Botón MENOS --}}
+                                                    <form action="{{ route('cart.update', $id) }}" method="POST" class="m-0">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="action" value="decrease">
+                                                        <button type="submit" class="px-3 py-1 text-gray-600 hover:bg-gray-100 hover:text-red-600 focus:outline-none border-r border-gray-300 transition-colors">
+                                                            −
+                                                        </button>
+                                                    </form>
+
+                                                    {{-- Número --}}
+                                                    <span class="px-3 py-1 text-gray-900 font-semibold bg-white min-w-[2.5rem] text-center select-none">
+                                                        {{ $details['quantity'] }}
+                                                    </span>
+
+                                                    {{-- Botón MÁS --}}
+                                                    <form action="{{ route('cart.update', $id) }}" method="POST" class="m-0">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="action" value="increase">
+                                                        <button type="submit" class="px-3 py-1 text-gray-600 hover:bg-gray-100 hover:text-green-600 focus:outline-none border-l border-gray-300 transition-colors">
+                                                            +
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
                                             
+                                            {{-- Precio Total del Item --}}
                                             <div class="text-right w-24">
                                                 <span class="block text-lg font-bold text-gray-900">
                                                     {{ number_format($details['price'] * $details['quantity'], 2) }}€
                                                 </span>
                                             </div>
 
+                                            {{-- Botón de Eliminar (Papelera) --}}
                                             <form action="{{ route('cart.remove', $id) }}" method="POST">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 p-2">
+                                                <button type="submit" class="text-gray-400 hover:text-red-500 p-2 transition-colors" title="Eliminar evento">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
@@ -86,7 +116,7 @@
                         <div class="mt-8">
                             <form action="{{ route('cart.checkout') }}" method="POST">
                                 @csrf
-                                <button type="submit" class="w-full bg-gray-900 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900">
+                                <button type="submit" class="w-full bg-gray-900 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors">
                                     Finalizar Compra
                                 </button>
                             </form>
@@ -104,7 +134,7 @@
                 <h3 class="mt-4 text-lg font-medium text-gray-900">Tu carrito está vacío</h3>
                 <p class="mt-2 text-gray-500">¿A qué esperas? ¡Encuentra los mejores eventos!</p>
                 <div class="mt-6">
-                    <a href="{{ route('events.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                    <a href="{{ route('events.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
                         Ver Eventos
                     </a>
                 </div>

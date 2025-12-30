@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage; // Necesario para subir imágenes
+use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
@@ -14,23 +14,26 @@ class EventController extends Controller
         $query = Event::with('artist'); 
         $locationTitle = 'Todos los eventos';
 
-        // Solo filtramos si el usuario explícitamente selecciona una ciudad en el buscador
+        // 1. Filtro por Ubicación (Buscador)
         if ($request->filled('location')) {
             $search = $request->input('location');
             $query->where('location', 'like', "%{$search}%");
             $locationTitle = ucfirst($search);
         }
-        // En EventController.php -> index()
-if ($request->filled('category')) {
-    $query->where('category', $request->input('category'));
-}
-// (Asegúrate de que en tu vista index.blade.php el <select> del filtro tenga name="category")
-        // HE ELIMINADO EL 'ELSEIF' que filtraba por la ciudad del usuario automáticamente.
-        // Ahora mostrará todos los eventos si no se busca nada.
 
+        // 2. Filtro por Categoría
+        if ($request->filled('category')) {
+            $query->where('category', $request->input('category'));
+        }
+
+        // 3. Filtro por Fecha (NUEVO - Esto es lo que faltaba)
+        if ($request->filled('date')) {
+            $query->whereDate('event_date', $request->input('date'));
+        }
+
+        // Ordenamos por fecha ascendente para ver los más próximos primero
         $events = $query->orderBy('event_date', 'asc')->get();
 
-        // Pasamos variable locationTitle para la vista (cambié el nombre para no confundir con el campo location)
         return view('events.index', compact('events', 'locationTitle'));
     }
 
@@ -40,7 +43,7 @@ if ($request->filled('category')) {
         return view('events.show', compact('event'));
     }
 
-    // Muestra el formulario
+    // Muestra el formulario de creación
     public function create()
     {
         // Verificar que sea artista
@@ -50,28 +53,26 @@ if ($request->filled('category')) {
         return view('events.create');
     }
 
-    // Guarda el evento
+    // Guarda el evento en la base de datos
     public function store(Request $request)
-{
-    if (Auth::user()->role !== 'artist') {
-        abort(403);
-    }
+    {
+        if (Auth::user()->role !== 'artist') {
+            abort(403);
+        }
 
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'category' => 'required|in:concierto,festival', // <--- AÑADE ESTA LÍNEA
-        'description' => 'required|string',
-        'event_date' => 'required|date|after:today',
-        'location' => 'required|string|max:255',
-        'capacity' => 'required|integer|min:1',
-        'price' => 'required|numeric|min:0',
-        'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ]);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|in:concierto,festival',
+            'description' => 'required|string',
+            'event_date' => 'required|date|after:today',
+            'location' => 'required|string|max:255',
+            'capacity' => 'required|integer|min:1',
+            'price' => 'required|numeric|min:0',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
 
-    // ... resto del código (subida de imagen, etc) ...
         // Subida de imagen
         if ($request->hasFile('image')) {
-            // Guarda en storage/app/public/events
             $path = $request->file('image')->store('events', 'public');
             $validated['image'] = $path;
         }

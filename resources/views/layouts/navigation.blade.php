@@ -64,6 +64,11 @@
                             </button>
                         </x-slot>
                         <x-slot name="content">
+                            {{-- AQUÍ ESTÁ LO QUE FALTABA: EL ROL DEL USUARIO --}}
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <p class="text-xs text-gray-500">Rol: {{ ucfirst(Auth::user()->role) }}</p>
+                            </div>
+                            
                             <x-dropdown-link :href="route('profile.edit')">{{ __('Profile') }}</x-dropdown-link>
                             <x-dropdown-link :href="route('cart.index')">Mi Carrito</x-dropdown-link>
                             <form method="POST" action="{{ route('logout') }}">
@@ -87,9 +92,48 @@
         </div>
     </div>
 
-    {{-- MENÚ MÓVIL (Existente) --}}
+    {{-- MENÚ MÓVIL (Mantenido igual) --}}
     <div :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden bg-gray-800">
-       {{-- ... (Tu código del menú móvil que ya tenías) ... --}}
+        <div class="pt-2 pb-2 px-4 border-b border-gray-700">
+             <form action="{{ route('events.index') }}" method="GET">
+                <select name="location" onchange="this.form.submit()" class="block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="">📍 Ubicación...</option>
+                    @foreach($navCities as $city)
+                        <option value="{{ $city }}" {{ request('location') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                    @endforeach
+                </select>
+            </form>
+        </div>
+
+        <div class="pt-2 pb-3 space-y-1">
+            <a href="{{ route('home') }}" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition duration-150 ease-in-out {{ request()->routeIs('home') ? 'border-indigo-400 text-white bg-gray-900' : 'border-transparent text-gray-300 hover:text-white hover:bg-gray-700 hover:border-gray-300' }}">Inicio</a>
+            <a href="{{ route('events.index') }}" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition duration-150 ease-in-out {{ request()->routeIs('events.index') ? 'border-indigo-400 text-white bg-gray-900' : 'border-transparent text-gray-300 hover:text-white hover:bg-gray-700 hover:border-gray-300' }}">Eventos</a>
+            <a href="{{ route('contact') }}" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition duration-150 ease-in-out {{ request()->routeIs('contact') ? 'border-indigo-400 text-white bg-gray-900' : 'border-transparent text-gray-300 hover:text-white hover:bg-gray-700 hover:border-gray-300' }}">Contacto</a>
+        </div>
+
+        @auth
+            <div class="pt-4 pb-1 border-t border-gray-700">
+                <div class="px-4">
+                    <div class="font-medium text-base text-gray-200">{{ Auth::user()->name }}</div>
+                    <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                    {{-- ROL TAMBIÉN AQUÍ EN MÓVIL POR SI ACASO --}}
+                    <div class="text-xs text-indigo-400 mt-1">Rol: {{ ucfirst(Auth::user()->role) }}</div>
+                </div>
+                <div class="mt-3 space-y-1">
+                    <a href="{{ route('profile.edit') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 hover:border-gray-300 transition duration-150 ease-in-out">{{ __('Profile') }}</a>
+                    <a href="{{ route('cart.index') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 hover:border-gray-300 transition duration-150 ease-in-out">Mi Carrito</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 hover:border-gray-300 transition duration-150 ease-in-out">{{ __('Log Out') }}</a>
+                    </form>
+                </div>
+            </div>
+        @else
+            <div class="pt-4 pb-1 border-t border-gray-700">
+                <a href="{{ route('login') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 hover:border-gray-300 transition duration-150 ease-in-out">Iniciar Sesión</a>
+                <a href="{{ route('register') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 hover:border-gray-300 transition duration-150 ease-in-out">Registrarse</a>
+            </div>
+        @endauth
     </div>
 
     {{-- ========================================== --}}
@@ -104,7 +148,8 @@
          x-transition:leave="ease-in-out duration-500"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity z-40"></div>
+         class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity z-40"
+         style="display: none;"></div> {{-- Añadido display none por defecto para evitar parpadeos --}}
 
     <div class="fixed inset-y-0 right-0 max-w-md w-full flex z-50 pointer-events-none"
          x-show="cartOpen"
@@ -113,7 +158,8 @@
          x-transition:enter-end="translate-x-0"
          x-transition:leave="transform transition ease-in-out duration-500 sm:duration-700"
          x-transition:leave-start="translate-x-0"
-         x-transition:leave-end="translate-x-full">
+         x-transition:leave-end="translate-x-full"
+         style="display: none;"> {{-- Añadido display none por defecto --}}
          
         <div class="pointer-events-auto w-screen max-w-md">
             <div class="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">

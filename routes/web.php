@@ -4,20 +4,22 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\CartController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ContactController;
 
 Route::get('/', function () {
     return view('home'); 
 })->name('home');
 
-Route::get('/contact', function () {
-    return view('contact.index'); 
-})->name('contact');
+// BORRA la ruta antigua de contact (la que tenía function() { view... }) y pon estas dos:
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
 
 // 1. PRIMERO: La lista general de eventos
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 
 // --- RUTAS PROTEGIDAS (Requieren Login) ---
 Route::middleware('auth')->group(function () {
+    Route::patch('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
     
     Route::get('/dashboard', function () {
         return view('dashboard');

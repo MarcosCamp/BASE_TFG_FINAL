@@ -48,7 +48,39 @@ class CartController extends Controller
         // 'cart_updated' sirve para decirle a la vista que abra el desplegable automáticamente
         return redirect()->back()->with('cart_updated', true);
     }
+// Actualizar cantidad desde el carrito
+    public function update(Request $request, $id)
+    {
+        $action = $request->input('action');
+        $cart = session()->get('cart');
 
+        if(isset($cart[$id])) {
+            
+            // Caso: Aumentar cantidad
+            if ($action === 'increase') {
+                // Opcional: Comprobar stock real en la BD antes de sumar
+                $event = Event::find($id);
+                if ($event && $cart[$id]['quantity'] < $event->capacity) {
+                    $cart[$id]['quantity']++;
+                } else {
+                    return redirect()->back()->with('error', 'No hay más entradas disponibles para este evento.');
+                }
+            } 
+            // Caso: Disminuir cantidad
+            elseif ($action === 'decrease') {
+                $cart[$id]['quantity']--;
+                
+                // Si baja de 1, lo eliminamos del carrito
+                if ($cart[$id]['quantity'] < 1) {
+                    unset($cart[$id]);
+                }
+            }
+            
+            session()->put('cart', $cart);
+        }
+
+        return redirect()->back()->with('success', 'Carrito actualizado');
+    }
     public function remove($id)
     {
         $cart = session()->get('cart', []);
