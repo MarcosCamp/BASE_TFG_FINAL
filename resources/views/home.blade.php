@@ -3,17 +3,28 @@
 @section('title', 'Inicio')
 
 @section('content')
-    <div class="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div class="w-full max-w-6xl px-4 text-center">
+    <div class="min-h-screen bg-gray-900 flex items-center justify-center overflow-hidden relative">
+        
+        {{-- Fondo decorativo (FOCO): Centrado, detrás de la cabeza, un poco más grande --}}
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none flex items-center justify-center">
+            {{-- 
+               - w-[35rem] h-[35rem]: Un poco más grande que antes.
+               - bg-indigo-900/20: Color morado sutil.
+               - blur-[100px]: Muy desenfocado para efecto "luz".
+            --}}
+            <div class="w-[35rem] h-[35rem] bg-indigo-900/20 rounded-full blur-[100px]"></div>
+        </div>
+
+        <div class="w-full max-w-6xl px-4 text-center relative z-10">
 
             {{-- Contenedor Interactivo --}}
             <div
                 id="logo-container"
-                class="relative w-full max-w-5xl mx-auto flex justify-center items-center cursor-pointer select-none"
+                class="relative w-full max-w-5xl mx-auto flex justify-center items-center cursor-pointer select-none group"
                 onclick="toggleAnimation()"
+                title="Haz click para descubrir BASE"
             >
                 {{-- 1. IMAGEN FINAL (logofinal.png) --}}
-                {{-- opacity-0 en vez de hidden para la transición suave. z-20 para estar encima. --}}
                 <img
                     id="final-img"
                     src="{{ asset('images/logofinal.png') }}"
@@ -32,24 +43,35 @@
                 />
 
                 {{-- 3. CAPA CABEZA (Base) --}}
-                {{--
-                   IMPORTANTE: Esta imagen es 'relative' y mantiene la altura del contenedor.
-                   Nunca le pondremos 'hidden'. Solo bajaremos su opacidad a 0.
-                --}}
                 <img
                     id="head-img"
                     src="{{ asset('images/logo.png') }}"
                     alt="BASE Logo Head"
-                    class="relative z-10 w-full transition-all duration-300 hover:scale-[1.02]"
+                    class="relative z-10 w-full transition-all duration-300 group-hover:scale-[1.02]"
                     style="filter: drop-shadow(0 20px 40px rgba(255, 255, 255, 0.15));"
                 />
             </div>
 
             {{-- Texto BASE --}}
-            {{-- Mantenemos el margen negativo y el z-index alto --}}
-            <h1 class="text-white text-8xl font-bold tracking-widest -mt-16 ml-4 relative z-30 pointer-events-none" style="text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);">
+            <h1 class="text-white text-8xl font-bold tracking-widest -mt-16 ml-4 relative z-30 pointer-events-none transition-transform duration-500" id="main-title" style="text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);">
                 BASE
             </h1>
+
+            {{-- DESCRIPCIÓN (Oculta inicialmente) --}}
+            <div id="description-container" class="max-w-3xl mx-auto mt-8 opacity-0 transform translate-y-4 transition-all duration-1000 ease-out">
+                <p class="text-gray-300 text-lg leading-relaxed font-light border-t border-gray-700 pt-6">
+                    Es una página web dedicada a la compra/venta de entradas, diseñada para facilitar a los artistas u organizadores de eventos la creación y publicación de estos, y mejorar tanto la accesibilidad como facilitar a los usuarios la compra de entradas.
+                </p>
+                
+                {{-- Botón CTA --}}
+                <div class="mt-8">
+                    <a href="{{ route('events.index') }}" class="inline-block px-8 py-3 border border-white/20 rounded-full text-white hover:bg-white hover:text-gray-900 transition-colors duration-300 font-medium">
+                        Ver Eventos
+                    </a>
+                </div>
+            </div>
+
+            {{-- Eliminado el texto de "haz click" --}}
         </div>
     </div>
 
@@ -60,44 +82,51 @@
             const speakers = document.getElementById('speakers-img');
             const head = document.getElementById('head-img');
             const finalImg = document.getElementById('final-img');
+            const description = document.getElementById('description-container');
 
             if (!isExpanded) {
-                // --- ABRIR ---
+                // --- ABRIR (Animación de entrada) ---
 
-                // 1. Aseguramos que las partes móviles se ven (por si acaso)
+                // 1. Mostrar altavoces y animarlos hacia afuera
                 speakers.classList.remove('opacity-0', 'scale-50');
-                speakers.classList.add('opacity-100', 'scale-100'); // Animación de salida
-
-                // 2. Esperar a que termine la animación (700ms) para hacer el cambio visual
+                speakers.classList.add('opacity-100', 'scale-100'); 
+                
+                // 2. Esperar a que terminen de salir los altavoces
                 setTimeout(() => {
                     if (speakers.classList.contains('scale-100')) {
-                        // Hacemos el cambio usando OPACIDAD, no display:none
+                        // Intercambio a imagen final
                         finalImg.classList.remove('opacity-0');
                         finalImg.classList.add('opacity-100');
 
-                        // Ocultamos las partes separadas (pero head sigue ocupando espacio invisible)
                         head.classList.add('opacity-0');
                         speakers.classList.add('opacity-0');
+                        
+                        // 3. MOSTRAR LA DESCRIPCIÓN
+                        description.classList.remove('opacity-0', 'translate-y-4');
+                        description.classList.add('opacity-100', 'translate-y-0');
                     }
-                }, 700);
+                }, 600);
 
                 isExpanded = true;
 
             } else {
-                // --- CERRAR ---
+                // --- CERRAR (Resetear) ---
 
-                // 1. Restaurar visibilidad de las partes separadas inmediatamente
+                // 1. Restaurar visibilidad de las partes separadas
                 finalImg.classList.remove('opacity-100');
                 finalImg.classList.add('opacity-0');
 
                 head.classList.remove('opacity-0');
-                // speakers vuelve a opacity-100 momentáneamente para animarse hacia adentro
                 speakers.classList.remove('opacity-0');
 
-                // 2. Forzar un pequeño reflow para que el navegador pille el cambio antes de animar
+                // Ocultar descripción
+                description.classList.remove('opacity-100', 'translate-y-0');
+                description.classList.add('opacity-0', 'translate-y-4');
+                
+                // 2. Animar altavoces hacia adentro
                 requestAnimationFrame(() => {
                     speakers.classList.remove('scale-100', 'opacity-100');
-                    speakers.classList.add('scale-50', 'opacity-0'); // Animación hacia adentro
+                    speakers.classList.add('scale-50', 'opacity-0');
                 });
 
                 isExpanded = false;
