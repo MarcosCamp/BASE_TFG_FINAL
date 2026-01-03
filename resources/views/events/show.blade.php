@@ -10,7 +10,6 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-8 h-full">
                 
                 {{-- BLOQUE 1: IMAGEN (Izquierda) --}}
-                {{-- Centrado vertical y horizontalmente en su cuadrante --}}
                 <div class="bg-gray-100 flex items-center justify-center p-8 md:p-12 h-full min-h-[400px]">
                     @if($event->image)
                         <img src="{{ asset('storage/' . $event->image) }}" 
@@ -73,7 +72,7 @@
                             </svg>
                             <span>
                                 Entradas disponibles: 
-                                <strong class="{{ $event->capacity < 10 ? 'text-red-500' : 'text-gray-900' }}">
+                                <strong class="{{ $event->capacity < 20 ? 'text-red-600' : 'text-gray-900' }}">
                                     {{ $event->capacity }}
                                 </strong>
                             </span>
@@ -87,22 +86,32 @@
                             <p class="text-4xl font-bold text-gray-900">{{ number_format($event->price, 2) }}€</p>
                         </div>
 
+                        {{-- LÓGICA DE STOCK --}}
                         @if($event->capacity > 0)
+                            
+                            {{-- Aviso de Pocas Entradas --}}
+                            @if($event->capacity < 20)
+                                <p class="text-red-600 text-sm font-bold mb-3 animate-pulse">
+                                    ¡Date prisa! Quedan pocas entradas.
+                                </p>
+                            @else
+                                <p class="text-green-600 text-sm font-bold mb-3">
+                                    En stock
+                                </p>
+                            @endif
+
                             <form action="{{ route('cart.add', $event->id) }}" method="POST">
                                 @csrf
                                 <div class="flex gap-4">
                                     {{-- Selector de Cantidad --}}
                                     <div class="w-1/3">
                                         <label for="quantity" class="sr-only">Cantidad</label>
-                                        <input 
-                                            type="number" 
-                                            id="quantity" 
-                                            name="quantity" 
-                                            value="1" 
-                                            min="1" 
-                                            max="{{ $event->capacity }}"
-                                            class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-center text-lg font-medium py-3"
-                                        >
+                                        <select name="quantity" id="quantity" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-center text-lg font-medium py-3">
+                                            {{-- Creamos un bucle hasta un máximo de 10 o la capacidad real --}}
+                                            @for ($i = 1; $i <= min(10, $event->capacity); $i++)
+                                                <option value="{{ $i }}">{{ $i }}</option>
+                                            @endfor
+                                        </select>
                                     </div>
 
                                     {{-- Botón Comprar --}}
@@ -110,19 +119,19 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                         </svg>
-                                        Comprar Entradas
+                                        Añadir al Carrito
                                     </button>
                                 </div>
                             </form>
 
                             {{-- FEEDBACK EN ROJO AL AÑADIR AL CARRITO --}}
                             @if(session('success'))
-                                <div class="mt-4 p-3 bg-red-50 border border-red-100 rounded-md animate-pulse">
-                                    <p class="text-red-600 text-center font-bold">
+                                <div class="mt-4 p-3 bg-green-50 border border-green-100 rounded-md">
+                                    <p class="text-green-600 text-center font-bold">
                                         {{ session('success') }}
                                     </p>
                                     <div class="mt-2 text-center">
-                                        <a href="{{ route('cart.index') }}" class="text-sm text-red-700 underline hover:text-red-900">
+                                        <a href="{{ route('cart.index') }}" class="text-sm text-green-700 underline hover:text-green-900">
                                             Ir al carrito &rarr;
                                         </a>
                                     </div>
@@ -131,9 +140,12 @@
 
                         @else
                             {{-- Mensaje Sold Out --}}
-                            <div class="bg-gray-100 text-gray-500 text-center py-4 rounded-md font-bold uppercase tracking-widest border-2 border-gray-200">
-                                ¡Agotado!
+                            <div class="bg-red-50 text-red-700 text-center py-4 rounded-md font-bold uppercase tracking-widest border border-red-200">
+                                ¡Entradas Agotadas!
                             </div>
+                            <button disabled class="w-full mt-4 bg-gray-200 text-gray-400 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium cursor-not-allowed">
+                                Venta Cerrada
+                            </button>
                         @endif
                     </div>
 
