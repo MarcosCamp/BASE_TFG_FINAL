@@ -6,6 +6,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PaymentController; // <--- Importante: Añadido para que funcionen los pagos
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TicketController;
 
 Route::get('/', function () {
     return view('home'); 
@@ -46,7 +47,8 @@ Route::middleware('auth')->group(function () {
     
     // 2. Procesar el éxito (GET, retorno de Stripe)
     Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
-    
+    // Ruta para ver las entradas
+Route::get('/tickets/{order}', [TicketController::class, 'show'])->name('tickets.show');
 });
 
 // 3. TERCERO (Y ÚLTIMO): La ruta para ver un evento específico

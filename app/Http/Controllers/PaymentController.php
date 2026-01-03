@@ -8,6 +8,7 @@ use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Event; // <--- IMPORTANTE: Necesario para poder restar el stock
 
 class PaymentController extends Controller
 {
@@ -69,6 +70,7 @@ class PaymentController extends Controller
         ]);
 
         foreach ($cart as $id => $details) {
+            // 1. Crear el detalle del pedido
             OrderItem::create([
                 'order_id' => $order->id,
                 'event_id' => $id,
@@ -76,6 +78,13 @@ class PaymentController extends Controller
                 'quantity' => $details['quantity'],
                 'price' => $details['price'],
             ]);
+
+            // 2. RESTAR STOCK (CAPACIDAD) AL EVENTO
+            $event = Event::find($id);
+            if ($event) {
+                // decrement resta la cantidad automáticamente de la columna 'capacity'
+                $event->decrement('capacity', $details['quantity']);
+            }
         }
 
         // Vaciar carrito

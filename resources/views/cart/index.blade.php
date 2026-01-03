@@ -102,10 +102,6 @@
                                     <dt class="text-gray-600">Subtotal</dt>
                                     <dd class="font-medium text-gray-900">{{ number_format($total, 2) }}€</dd>
                                 </div>
-                                <div class="flex items-center justify-between py-4">
-                                    <dt class="text-gray-600">Gastos de gestión</dt>
-                                    <dd class="font-medium text-gray-900">0.00€</dd>
-                                </div>
                                 <div class="flex items-center justify-between py-4 border-t border-gray-200">
                                     <dt class="text-base font-bold text-gray-900">Total</dt>
                                     <dd class="text-xl font-bold text-gray-900">{{ number_format($total, 2) }}€</dd>
